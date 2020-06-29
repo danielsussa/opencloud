@@ -16,7 +16,48 @@ import (
 	"time"
 )
 
-func GetCertificate(chain string) *x509.Certificate {
+type RsaKeyPair struct {
+	Key    []byte
+	Public []byte
+}
+
+func GenerateRSA(bitSize int) RsaKeyPair {
+	reader := rand.Reader
+	key, err := rsa.GenerateKey(reader, bitSize)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var privateKey = &pem.Block{
+		Type:  "PRIVATE KEY",
+		Bytes: x509.MarshalPKCS1PrivateKey(key),
+	}
+
+	tml := x509.Certificate{
+		// you can add any attr that you need
+		NotBefore: time.Now(),
+		NotAfter:  time.Now().AddDate(5, 0, 0),
+		// you have to generate a different serial number each execution
+		SerialNumber:          big.NewInt(123123),
+		BasicConstraintsValid: true,
+	}
+	cert, err := x509.CreateCertificate(rand.Reader, &tml, &tml, &key.PublicKey, key)
+	if err != nil {
+		log.Fatal("Certificate cannot be created.", err.Error())
+	}
+
+	var certKey = &pem.Block{
+		Type:  "CERTIFICATE",
+		Bytes: cert,
+	}
+
+	return RsaKeyPair{
+		Key:    pem.EncodeToMemory(certKey),
+		Public: pem.EncodeToMemory(privateKey),
+	}
+}
+
+func GetCACertificate(chain string) *x509.Certificate {
 	pemByte, err := ioutil.ReadFile(chain)
 	if err != nil {
 		log.Fatal(err)
@@ -40,7 +81,7 @@ func GetCertificate(chain string) *x509.Certificate {
 }
 
 func certsetup2() (serverTLSConf *tls.Config, err error) {
-	ca := GetCertificate("")
+	ca := GetCACertificate("")
 
 	fmt.Println(ca.DNSNames)
 

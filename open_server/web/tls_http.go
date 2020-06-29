@@ -15,7 +15,7 @@ import (
 var currentHost string
 
 func extractHost(chain string) (string, error) {
-	host := tlsListener.GetCertificate(chain).DNSNames[0]
+	host := tlsListener.GetCACertificate(chain).DNSNames[0]
 	if !strings.HasPrefix(host, "*.") {
 		return "", errors.New("cannot extract wildcard from cert")
 	}
