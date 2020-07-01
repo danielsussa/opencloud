@@ -1,10 +1,10 @@
-package web
+package webProxy
 
 import (
-	"bufio"
 	"errors"
 	"fmt"
 	tlsListener "github.com/danielsussa/opencloud/open_server/tls"
+	"github.com/danielsussa/opencloud/open_server/web"
 	webRouter "github.com/danielsussa/opencloud/open_server/web_router"
 	"io"
 	"log"
@@ -15,6 +15,7 @@ import (
 var currentHost string
 
 func extractHost(chain string) (string, error) {
+	log.Println(tlsListener.GetCACertificate(chain).DNSNames)
 	host := tlsListener.GetCACertificate(chain).DNSNames[0]
 	if !strings.HasPrefix(host, "*.") {
 		return "", errors.New("cannot extract wildcard from cert")
@@ -35,33 +36,27 @@ func ServeHttps(chain, key, port string) {
 func listenerConn(conn net.Conn) {
 	defer conn.Close()
 
-	r := bufio.NewReader(conn)
-	host := ""
-	for {
-		msg, err := r.ReadString('\n')
-		if err != nil {
-			log.Println(err)
-			return
-		}
-		if strings.Contains(msg, "Host: ") {
-			host = msg[6 : len(msg)-len(currentHost)-3]
-			break
-		}
-	}
-	if host == "" {
+	httpInfo := web.ExtractHttpInfo(conn)
+	// redirect to
+	if httpInfo.Host() == currentHost {
+		go handleWebCommand(conn, httpInfo)
 		return
 	}
 
 	router := webRouter.GetRouter()
-	proxyConn := router.GetRoute(host)
+	proxyConn := router.GetRoute(httpInfo.Host())
 	if proxyConn == nil {
 		return
 	}
 
-	go handleClient(proxyConn, conn)
+	go handleRedirectClient(proxyConn, conn)
 }
 
-func handleClient(remoteConn net.Conn, localConn net.Conn) {
+func handleWebCommand(conn net.Conn, info *web.HttpInfo) {
+	fmt.Println(info)
+}
+
+func handleRedirectClient(remoteConn net.Conn, localConn net.Conn) {
 	defer remoteConn.Close()
 	chDone := make(chan bool)
 
