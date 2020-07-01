@@ -15,11 +15,11 @@ const (
 	ADD_REVERSE_PROXY CommandType = "ADD_REVERSE_PROXY"
 )
 
-type ApiCommandHandler func(apiCommandRequest ApiCommandRequest, c Client)
+type ApiCommandHandler func(apiCommandRequest ApiCommandRequest, c OpenAgent)
 
-func commandHandler(apiCommandRequest ApiCommandRequest, c Client) {
+func commandHandler(apiCommandRequest ApiCommandRequest, c OpenAgent) {
 	switch apiCommandRequest.CommandType {
 	case ADD_REVERSE_PROXY:
-		c.AddSshReverseProxy(apiCommandRequest.Command.(ReverseProxyInfo), c)
+		c.AddSshReverseProxy(c, apiCommandRequest.Command.(ReverseProxyInfo))
 	}
 }

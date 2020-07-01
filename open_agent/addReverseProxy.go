@@ -27,9 +27,9 @@ func (rp ReverseProxyInfo) LocalString() string {
 	return fmt.Sprintf("%s:%d", rp.Host, rp.localPort)
 }
 
-type AddSshReverseProxy func(c Client, info ReverseProxyInfo)
+type AddSshReverseProxy func(c OpenAgent, info ReverseProxyInfo)
 
-func addReverseProxy(c Client, info ReverseProxyInfo) {
+func addReverseProxy(c OpenAgent, info ReverseProxyInfo) {
 
 	key, err := ssh.ParsePrivateKey(c.rsaKeyPair.Private)
 	if err != nil {

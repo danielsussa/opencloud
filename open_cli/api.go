@@ -1,59 +1,57 @@
 package main
 
 import (
-	"fmt"
 	"golang.org/x/crypto/ssh"
+	"io"
+	"log"
+	"os"
 )
 
-type Config struct {
-	bitSize       int
-	User          string
-	SshServerHost string
-	SshServerPort int
-}
-
-func (c Config) ParseSshHostPort() string {
-	return fmt.Sprintf("%s:%d", c.SshServerHost, c.SshServerPort)
-}
-
-type Client struct {
-	rsaKeyPair *RsaKeyPair
-	sshConn    *ssh.Client
-	Config     Config
-
-	GerenateRsaKeyPair GerenateRsaKeyPair
-
-	CommandConnection CommandConnection
-	ApiCommandHandler ApiCommandHandler
-
-	SshConnection      SshConnection
-	AddSshReverseProxy AddSshReverseProxy
-}
-
-func (c Client) Start(config Config) {
-	c.Config = config
-	c.rsaKeyPair = c.GerenateRsaKeyPair(config.bitSize)
-	c.sshConn = c.SshConnection(config, c.rsaKeyPair)
-	select {}
-}
-
 func main() {
+	// Create client config
+	config := &ssh.ClientConfig{
+		User: "teste",
+		Auth: []ssh.AuthMethod{
+			ssh.Password("my_password"),
+		},
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+	}
+	// Connect to ssh server
+	conn, err := ssh.Dial("tcp", "localhost:9999", config)
+	if err != nil {
+		log.Fatal("unable to connect: ", err)
+	}
+	defer conn.Close()
+	// Create a session
+	session, err := conn.NewSession()
+	if err != nil {
+		log.Fatal("unable to create session: ", err)
+	}
+	defer session.Close()
 
-	config := Config{
-		bitSize:       2048,
-		SshServerHost: "127.0.0.1",
-		SshServerPort: 2222,
+	stdout, err := session.StdoutPipe()
+	if err != nil {
+		log.Fatal(err)
+	}
+	stderr, err := session.StderrPipe()
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	client := Client{
-		GerenateRsaKeyPair: rsaKeyGen,
+	command := ``
 
-		CommandConnection: commandConnection,
-		ApiCommandHandler: commandHandler,
-
-		SshConnection:      sshConnection,
-		AddSshReverseProxy: addReverseProxy,
+	if err := session.Start(command); err != nil {
+		log.Fatal(err)
 	}
-	client.Start(config)
 
+	if err := session.Signal(ssh.SIGKILL); err != nil {
+		log.Fatal(err)
+	}
+
+	io.Copy(os.Stderr, stderr)
+	io.Copy(os.Stdout, stdout)
+
+	if err := session.Wait(); err != nil {
+		log.Println(err)
+	}
 }
