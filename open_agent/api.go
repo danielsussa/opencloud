@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -9,12 +8,8 @@ type Config struct {
 	bitSize       int
 	User          string
 	SshServerHost string
-	SshServerPort int
 }
 
-func (c Config) ParseSshHostPort() string {
-	return fmt.Sprintf("%s:%d", c.SshServerHost, c.SshServerPort)
-}
 
 type OpenAgent struct {
 	rsaKeyPair *RsaKeyPair
@@ -37,10 +32,11 @@ func (c OpenAgent) Start(config Config) {
 
 func main() {
 
+	host := "127.0.0.1:2223"
+
 	config := Config{
 		bitSize:       2048,
-		SshServerHost: "127.0.0.1",
-		SshServerPort: 2223,
+		SshServerHost: host,
 	}
 
 	client := OpenAgent{

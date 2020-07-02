@@ -6,8 +6,9 @@ import (
 )
 
 type Config struct {
-	ServerClientPort string
-	ServerAgentPort  string
+	ServerClientPort     string
+	ServerClientPassword string
+	ServerAgentPort      string
 }
 
 type ApiServer struct {
@@ -23,7 +24,9 @@ type AgentInfo struct {
 }
 
 func (apiServer *ApiServer) Start(config Config) {
+	apiServer.agentSession = make(map[ssh.PublicKey]AgentInfo)
 	errChan := make(chan error, 2)
+	apiServer.Config = config
 	apiServer.serverAgentHandler(config, errChan)
 	apiServer.serverClientHandler(config, errChan)
 	select {
@@ -34,11 +37,14 @@ func (apiServer *ApiServer) Start(config Config) {
 	}
 }
 
+var password = "custom_password"
+
 func main() {
 
 	config := Config{
-		ServerClientPort: ":2222",
-		ServerAgentPort:  ":9999",
+		ServerClientPassword: password,
+		ServerClientPort:     ":2222",
+		ServerAgentPort:      ":9999",
 	}
 	server := ApiServer{}
 

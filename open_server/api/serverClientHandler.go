@@ -5,7 +5,7 @@ import (
 	"io"
 )
 
-func (apiServer *ApiServer) serverClientHandler(config Config, errChan chan error) {
+func (apiServer *ApiServer) serverAgentHandler(config Config, errChan chan error) {
 	server := ssh.Server{
 		Addr: config.ServerClientPort,
 		Handler: ssh.Handler(func(s ssh.Session) {

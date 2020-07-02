@@ -21,7 +21,7 @@ func sshConnection(config Config, keyPair *RsaKeyPair) *ssh.Client {
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
 	// Connect to SSH remote server using serverEndpoint
-	serverConn, err := ssh.Dial("tcp", config.ParseSshHostPort(), sshConfig)
+	serverConn, err := ssh.Dial("tcp", config.SshServerHost, sshConfig)
 	if err != nil {
 		log.Fatalln(fmt.Printf("Dial INTO remote server error: %s", err))
 	}

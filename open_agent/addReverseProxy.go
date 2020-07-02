@@ -45,7 +45,7 @@ func addReverseProxy(c OpenAgent, info ReverseProxyInfo) {
 	}
 
 	// Connect to SSH remote server using serverEndpoint
-	serverConn, err := ssh.Dial("tcp", c.Config.ParseSshHostPort(), sshConfig)
+	serverConn, err := ssh.Dial("tcp", c.Config.SshServerHost, sshConfig)
 	if err != nil {
 		log.Fatalln(fmt.Printf("Dial INTO remote server error: %s", err))
 	}

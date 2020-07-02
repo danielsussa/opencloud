@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
+	"golang.org/x/crypto/ssh"
 	"io/ioutil"
 	"log"
 	"math/big"
@@ -18,6 +19,7 @@ import (
 type RsaKeyPair struct {
 	Private []byte
 	Public  []byte
+	RsaPublic []byte
 	Cert    []byte
 }
 
@@ -66,18 +68,25 @@ func (c *OpenAgent) getOrGenerateRsaKeyGen() {
 		Bytes: asn1Bytes,
 	}
 
+	publicRsaKey, err := ssh.NewPublicKey(&key.PublicKey)
+	if err != nil {
+		log.Fatal("Cannot parse public ", err.Error())
+	}
+	pubKeyBytes := ssh.MarshalAuthorizedKey(publicRsaKey)
+
 	c.rsaKeyPair = &RsaKeyPair{
 		Cert:    pem.EncodeToMemory(certKey),
 		Public:  pem.EncodeToMemory(pubKey),
+		RsaPublic: pubKeyBytes,
 		Private: pem.EncodeToMemory(privateKey),
 	}
 	saveKeyFile(c.rsaKeyPair)
-	consoleMessage(keyPair)
+	consoleMessage(c.rsaKeyPair)
 }
 
 func consoleMessage(keyPair *RsaKeyPair) {
-	encodedPub := base64.StdEncoding.EncodeToString(keyPair.Public)
-	log.Println(fmt.Sprintf("to add key on server use the command: opencli -command=new_agent -key=%s", encodedPub))
+	encodedPub := base64.StdEncoding.EncodeToString(keyPair.RsaPublic)
+	log.Println(fmt.Sprintf("to add key on server use the command: opencli -command=new_agent -name=agentName -key=%s", encodedPub))
 }
 
 func saveKeyFile(keyPair *RsaKeyPair) {
