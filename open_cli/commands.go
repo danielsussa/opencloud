@@ -7,36 +7,47 @@ import (
 )
 
 type flags struct {
-	Name *string
+	Agent *string
 	Key *string
 	Command *string
 }
 
 func loadAllFlags()flags{
-	name := flag.String("name", "", "")
+	agent := flag.String("agent", "", "")
 	key := flag.String("key", "", "")
 	command := flag.String("command", "", "")
 	flag.Parse()
 	return flags{
-		Name:    name,
+		Agent:    agent,
 		Key:     key,
 		Command: command,
 	}
 }
 
-type newAgent struct {
+type newAgentCommand struct {
 	Key string
-	Name string
+	Agent string
 }
 
-func(newAgent newAgent)Text()string{
-	return fmt.Sprintf("%s %s %s","new_agent" ,newAgent.Key, newAgent.Name)
+func(newAgent newAgentCommand)Text()string{
+	return fmt.Sprintf("%s %s %s","new_agent" ,newAgent.Key, newAgent.Agent)
+}
+
+type pingCommand struct {
+	Agent string
+}
+
+func(ping pingCommand)Text()string{
+	return fmt.Sprintf("%s %s","ping" ,ping.Agent)
 }
 
 func(f flags) returnCommand()string{
 	switch *f.Command {
 	case "new_agent":
-		return newAgent{Key:  *f.Key, Name: *f.Name}.Text()
+		return newAgentCommand{Key:  *f.Key, Agent: *f.Agent}.Text()
+	case "ping":
+		return pingCommand{Agent: *f.Agent}.Text()
+
 	}
 	log.Fatal("cannot find command")
 	return ""

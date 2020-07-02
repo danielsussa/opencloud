@@ -68,16 +68,15 @@ func (c *OpenAgent) getOrGenerateRsaKeyGen() {
 		Bytes: asn1Bytes,
 	}
 
-	publicRsaKey, err := ssh.NewPublicKey(&key.PublicKey)
+	signer, err := ssh.ParsePrivateKey(pem.EncodeToMemory(privateKey))
 	if err != nil {
-		log.Fatal("Cannot parse public ", err.Error())
+		log.Fatalln(err)
 	}
-	pubKeyBytes := ssh.MarshalAuthorizedKey(publicRsaKey)
 
 	c.rsaKeyPair = &RsaKeyPair{
 		Cert:    pem.EncodeToMemory(certKey),
 		Public:  pem.EncodeToMemory(pubKey),
-		RsaPublic: pubKeyBytes,
+		RsaPublic: signer.PublicKey().Marshal(),
 		Private: pem.EncodeToMemory(privateKey),
 	}
 	saveKeyFile(c.rsaKeyPair)
@@ -86,19 +85,19 @@ func (c *OpenAgent) getOrGenerateRsaKeyGen() {
 
 func consoleMessage(keyPair *RsaKeyPair) {
 	encodedPub := base64.StdEncoding.EncodeToString(keyPair.RsaPublic)
-	log.Println(fmt.Sprintf("to add key on server use the command: opencli -command=new_agent -name=agentName -key=%s", encodedPub))
+	log.Println(fmt.Sprintf("to add key on server use the command: opencli -command=new_agent -agent=agentName -key=%s", encodedPub))
 }
 
 func saveKeyFile(keyPair *RsaKeyPair) {
 	b, _ := json.Marshal(keyPair)
-	err := ioutil.WriteFile("keys/rsaKeyPair.json", b, 0644)
+	err := ioutil.WriteFile("config/rsaKeyPair.json", b, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
 func loadKeyFile() (rsa *RsaKeyPair) {
-	file, err := ioutil.ReadFile("keys/rsaKeyPair.json")
+	file, err := ioutil.ReadFile("config/rsaKeyPair.json")
 	if err != nil {
 		return nil
 	}

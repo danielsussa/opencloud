@@ -8,7 +8,7 @@ import (
 
 func (apiServer *ApiServer) serverClientHandler(config Config, errChan chan error) {
 	server := ssh.Server{
-		Addr: config.ServerAgentPort,
+		Addr: config.ServerClientPort,
 		PasswordHandler: func(ctx ssh.Context, password string) bool {
 			if password != apiServer.Config.ServerClientPassword {
 				return false
@@ -17,6 +17,7 @@ func (apiServer *ApiServer) serverClientHandler(config Config, errChan chan erro
 		},
 		Handler: ssh.Handler(func(s ssh.Session) {
 			// get command
+			apiServer.CommandList = append(apiServer.CommandList, s.Command())
 			command, err := getCommand(s.Command())
 			if err != nil {
 				log.Println(err)

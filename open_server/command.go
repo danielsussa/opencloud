@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/base64"
 	"errors"
 	"github.com/gliderlabs/ssh"
 )
@@ -24,16 +23,7 @@ func newCommandNewAgent(strArr []string) *newAgent {
 }
 
 func (n newAgent) Execute(server *ApiServer, s ssh.Session) error {
-	b, err := base64.StdEncoding.DecodeString(n.Key)
-	if err != nil {
-		return err
-	}
-	parsedKey, _, _, _, err := ssh.ParseAuthorizedKey(b)
-	if err != nil {
-		return err
-	}
-
-	server.agentSession[parsedKey] = AgentInfo{
+	server.agentSession[n.Key] = AgentInfo{
 		Name:    n.Name,
 		Session: &s,
 	}

@@ -13,39 +13,40 @@ type Config struct {
 
 type OpenAgent struct {
 	rsaKeyPair *RsaKeyPair
-	sshConn    *ssh.Client
-	Config     Config
+
+	sshSession *ssh.Session
+	sshClient  *ssh.Client
+	Config Config
 
 	CommandConnection CommandConnection
 	ApiCommandHandler ApiCommandHandler
 
-	SshConnection      SshConnection
 	AddSshReverseProxy AddSshReverseProxy
 }
 
 func (c OpenAgent) Start(config Config) {
 	c.Config = config
 	c.getOrGenerateRsaKeyGen()
-	c.sshConn = c.SshConnection(config, c.rsaKeyPair)
+	c.sshConnection()
 	select {}
 }
 
 func main() {
 
-	host := "127.0.0.1:2223"
+	confFile := loadConfig()
 
 	config := Config{
 		bitSize:       2048,
-		SshServerHost: host,
+		SshServerHost: confFile.Host,
+		User: confFile.AgentName,
 	}
 
 	client := OpenAgent{
 		CommandConnection: commandConnection,
 		ApiCommandHandler: commandHandler,
-
-		SshConnection:      sshConnection,
 		AddSshReverseProxy: addReverseProxy,
 	}
 	client.Start(config)
 
 }
+
