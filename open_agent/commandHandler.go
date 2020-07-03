@@ -1,25 +1,31 @@
 package main
 
-type ApiCommandRequest struct {
-	CommandType CommandType
-	Command     ApiCommand
-}
-
-type ApiCommand interface {
-	Kind() CommandType
-}
-
-type CommandType string
-
-const (
-	ADD_REVERSE_PROXY CommandType = "ADD_REVERSE_PROXY"
+import (
+	"net"
+	"strings"
 )
 
-type ApiCommandHandler func(apiCommandRequest ApiCommandRequest, c OpenAgent)
+type ApiCommand interface {
+	Execute(conn net.Conn)error
+}
 
-func commandHandler(apiCommandRequest ApiCommandRequest, c OpenAgent) {
-	switch apiCommandRequest.CommandType {
-	case ADD_REVERSE_PROXY:
-		c.AddSshReverseProxy(c, apiCommandRequest.Command.(ReverseProxyInfo))
+type pingCommand struct {
+
+}
+
+func (p pingCommand)Execute(conn net.Conn)error{
+	_, err := conn.Write([]byte("pong\n"))
+	if err != nil {
+		return err
 	}
+	return nil
+}
+
+func(op OpenAgent) commandHandler(cmd string) ApiCommand{
+	cmdArr := strings.Split(cmd, " ")
+	switch cmdArr[0] {
+	case "ping":
+		return pingCommand{}
+	}
+	return nil
 }

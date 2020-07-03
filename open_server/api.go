@@ -26,8 +26,9 @@ type ApiServer struct {
 }
 
 type AgentInfo struct {
-	Name    string
-	Session *ssh.Session
+	Agent    string
+	Session   ssh.Session
+	Port int
 }
 
 func (apiServer *ApiServer) Start(config Config) {

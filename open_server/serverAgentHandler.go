@@ -2,25 +2,37 @@ package main
 
 import (
 	"encoding/base64"
+	"fmt"
 	"github.com/gliderlabs/ssh"
 	"io"
 	"log"
 )
 
 func (apiServer *ApiServer) serverAgentHandler(config Config, errChan chan error) {
+	forwardHandler := &ssh.ForwardedTCPHandler{}
 	server := ssh.Server{
 		Addr: config.ServerAgentPort,
 		Handler: ssh.Handler(func(s ssh.Session) {
-			io.WriteString(s, "Remote forwarding available...\n")
-			keyEncoded := base64.StdEncoding.EncodeToString(s.PublicKey().Marshal())
-			agentSession := apiServer.agentSession[keyEncoded]
-			agentSession.Session = &s
+			// get command
+			apiServer.CommandList = append(apiServer.CommandList, s.Command())
+			command, err := getAgentCommand(s.Command())
+			if err != nil {
+				log.Println(err)
+				return
+			}
+			err = command.Execute(apiServer, s)
+			if err != nil {
+				io.WriteString(s, fmt.Sprintf("%s\n", err.Error()))
+				log.Println(err)
+				return
+			}
+			// execute command
+
 			sign := make(chan ssh.Signal)
 			s.Signals(sign)
 			select {
 			case k := <-sign:
 				if k == ssh.SIGKILL {
-					delete(apiServer.agentSession, keyEncoded)
 					return
 				}
 			}
@@ -40,6 +52,10 @@ func (apiServer *ApiServer) serverAgentHandler(config Config, errChan chan error
 			}
 			return true
 		}),
+		RequestHandlers: map[string]ssh.RequestHandler{
+			"tcpip-forward":        forwardHandler.HandleSSHRequest,
+			"cancel-tcpip-forward": forwardHandler.HandleSSHRequest,
+		},
 	}
 	go func() {
 		errChan <- server.ListenAndServe()

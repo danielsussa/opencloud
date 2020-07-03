@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gliderlabs/ssh"
 	"io"
 	"log"
@@ -18,19 +19,19 @@ func (apiServer *ApiServer) serverClientHandler(config Config, errChan chan erro
 		Handler: ssh.Handler(func(s ssh.Session) {
 			// get command
 			apiServer.CommandList = append(apiServer.CommandList, s.Command())
-			command, err := getCommand(s.Command())
+			command, err := getClientCommand(s.Command())
 			if err != nil {
 				log.Println(err)
 				return
 			}
 			err = command.Execute(apiServer, s)
 			if err != nil {
+				io.WriteString(s, fmt.Sprintf("%s\n", err.Error()))
 				log.Println(err)
 				return
 			}
 			// execute command
 
-			io.WriteString(s, "writing data back...\n")
 			sign := make(chan ssh.Signal)
 			s.Signals(sign)
 			select {

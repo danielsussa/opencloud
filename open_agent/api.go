@@ -1,9 +1,5 @@
 package main
 
-import (
-	"golang.org/x/crypto/ssh"
-)
-
 type Config struct {
 	bitSize       int
 	User          string
@@ -13,22 +9,15 @@ type Config struct {
 
 type OpenAgent struct {
 	rsaKeyPair *RsaKeyPair
-
-	sshSession *ssh.Session
-	sshClient  *ssh.Client
 	Config Config
 
-	CommandConnection CommandConnection
-	ApiCommandHandler ApiCommandHandler
-
-	AddSshReverseProxy AddSshReverseProxy
+	Port int
 }
 
-func (c OpenAgent) Start(config Config) {
-	c.Config = config
+func (c OpenAgent) Start() {
 	c.getOrGenerateRsaKeyGen()
-	c.sshConnection()
-	select {}
+	c.setConnectionPort()
+	c.startAdminProxy()
 }
 
 func main() {
@@ -42,11 +31,9 @@ func main() {
 	}
 
 	client := OpenAgent{
-		CommandConnection: commandConnection,
-		ApiCommandHandler: commandHandler,
-		AddSshReverseProxy: addReverseProxy,
+		Config: config,
 	}
-	client.Start(config)
+	client.Start()
 
 }
 

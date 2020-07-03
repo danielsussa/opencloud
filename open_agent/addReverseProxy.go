@@ -15,9 +15,6 @@ type ReverseProxyInfo struct {
 	RemotePort int
 }
 
-func (rp ReverseProxyInfo) Kind() CommandType {
-	return ADD_REVERSE_PROXY
-}
 
 func (rp ReverseProxyInfo) RemoteString() string {
 	return fmt.Sprintf("%s:%d", rp.Host, rp.RemotePort)
@@ -27,9 +24,7 @@ func (rp ReverseProxyInfo) LocalString() string {
 	return fmt.Sprintf("%s:%d", rp.Host, rp.localPort)
 }
 
-type AddSshReverseProxy func(c OpenAgent, info ReverseProxyInfo)
-
-func addReverseProxy(c OpenAgent, info ReverseProxyInfo) {
+func(c OpenAgent) addReverseProxy(info ReverseProxyInfo) {
 
 	key, err := ssh.ParsePrivateKey(c.rsaKeyPair.Private)
 	if err != nil {

@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"golang.org/x/crypto/ssh"
@@ -16,7 +17,7 @@ var password = "custom_password"
 
 func main() {
 	conf := loadConfig()
-	command := loadAllFlags().returnCommand()
+	command := loadAllFlags().returnCommandRequest()
 
 	// Create client config
 	config := &ssh.ClientConfig{
@@ -56,34 +57,38 @@ func main() {
 		log.Fatal(err)
 	}
 
-	io.Copy(os.Stderr, stderr)
-	io.Copy(os.Stdout, stdout)
+	var outBuf bytes.Buffer
+	var errBuf bytes.Buffer
+
+	io.Copy(&outBuf, stdout)
+	io.Copy(&errBuf, stderr)
 
 	if err := session.Wait(); err != nil {
 		log.Println(err)
 	}
+	fmt.Println(returnCommandResponse(outBuf.String()))
 }
 
 type fileConfig struct {
 	Host string
 }
 
-func loadConfig()(fc fileConfig){
+func loadConfig() (fc fileConfig) {
 	file, err := ioutil.ReadFile("config/config.json")
-	if err != nil{
+	if err != nil {
 		fc = makeConfig()
 	}
 	json.Unmarshal(file, &fc)
 	return fc
 }
 
-func makeConfig()(fc fileConfig){
+func makeConfig() (fc fileConfig) {
 	reader := bufio.NewReader(os.Stdin)
 	fmt.Print("Enter host (ex: localhost:9090): ")
 	host, _ := reader.ReadString('\n')
-	fc.Host = strings.Trim(host,"\n")
+	fc.Host = strings.Trim(host, "\n")
 
-	b,_ := json.Marshal(fc)
+	b, _ := json.Marshal(fc)
 	err := ioutil.WriteFile("config/config.json", b, 0644)
 	if err != nil {
 		log.Fatal(err)
