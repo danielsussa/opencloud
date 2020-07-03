@@ -11,8 +11,7 @@ import (
 	"strings"
 )
 
-
-func(openAgent *OpenAgent) setConnectionPort() {
+func (openAgent *OpenAgent) setConnectionPort() {
 	cli, err := sshClient(openAgent)
 	if err != nil {
 		log.Fatal(err)
@@ -29,15 +28,15 @@ func(openAgent *OpenAgent) setConnectionPort() {
 	var outBuf bytes.Buffer
 	io.Copy(&outBuf, stdout)
 
-	res := strings.Split(outBuf.String()," ")
+	res := strings.Split(outBuf.String(), " ")
 	if res[0] != "connect_agent" {
 		log.Fatal("cannot connect agent")
 	}
-	i,_ :=strconv.Atoi(res[1])
+	i, _ := strconv.Atoi(res[1])
 	openAgent.Port = i
 }
 
-func(openAgent *OpenAgent) startAdminProxy() {
+func (openAgent *OpenAgent) startAdminProxy() {
 	cli, err := sshClient(openAgent)
 	if err != nil {
 		log.Fatal(err)
@@ -50,30 +49,24 @@ func(openAgent *OpenAgent) startAdminProxy() {
 	for {
 		remoteConn, err := listener.Accept()
 		if err != nil {
-			remoteConn.Close()
-			log.Println(err)
-			continue
+			log.Fatal(err)
 		}
 		data, err := bufio.NewReader(remoteConn).ReadString('\n')
 		if err != nil {
-			remoteConn.Close()
-			log.Println(err)
-			continue
+			log.Fatal(err)
 		}
 		cmd := strings.TrimSpace(data)
 		err = openAgent.commandHandler(cmd).Execute(remoteConn)
 		if err != nil {
-			remoteConn.Close()
-			log.Println(err)
+			log.Fatal(err)
 		}
 	}
 }
 
-
-func sshClient(openAgent *OpenAgent)(*ssh.Client,error){
+func sshClient(openAgent *OpenAgent) (*ssh.Client, error) {
 	key, err := ssh.ParsePrivateKey(openAgent.rsaKeyPair.Private)
 	if err != nil {
-		log.Fatalln(err)
+		return nil, err
 	}
 
 	sshConfig := &ssh.ClientConfig{
@@ -85,12 +78,12 @@ func sshClient(openAgent *OpenAgent)(*ssh.Client,error){
 	// Connect to SSH remote server using serverEndpoint
 	serverConn, err := ssh.Dial("tcp", openAgent.Config.SshServerHost, sshConfig)
 	if err != nil {
-		log.Fatalln(fmt.Printf("Dial INTO remote server error: %s", err))
+		return nil, err
 	}
 	return serverConn, err
 }
 
-func sshSession(conn *ssh.Client, command string)(*ssh.Session,io.Reader,error){
+func sshSession(conn *ssh.Client, command string) (*ssh.Session, io.Reader, error) {
 	session, err := conn.NewSession()
 	if err != nil {
 		log.Fatalln(fmt.Printf("Dial INTO remote server error: %s", err))

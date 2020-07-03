@@ -55,7 +55,7 @@ func (apiServer *ApiServer) gracefullTerminate() {
 		case sig := <-c:
 			fmt.Printf("Got %s signal. Aborting...\n", sig)
 			if apiServer.CommandList == nil {
-				return
+				os.Exit(1)
 			}
 			b, err := json.Marshal(apiServer.CommandList)
 			fmt.Println(err)
