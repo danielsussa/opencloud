@@ -1,4 +1,4 @@
-package main
+package sshUtils
 
 import (
 	"crypto/rand"
@@ -23,16 +23,20 @@ type RsaKeyPair struct {
 	Cert    []byte
 }
 
-func (c *OpenAgent) getOrGenerateRsaKeyGen() {
-	// try load file
-	keyPair := loadKeyFile()
+var keyPair *RsaKeyPair
+
+func GetOrGenerateRsaKeyGen()*RsaKeyPair {
 	if keyPair != nil {
-		c.rsaKeyPair = keyPair
-		return
+		return keyPair
+	}
+	// try load file
+	keyPair = loadKeyFile()
+	if keyPair != nil {
+		return keyPair
 	}
 
 	reader := rand.Reader
-	key, err := rsa.GenerateKey(reader, c.Config.bitSize)
+	key, err := rsa.GenerateKey(reader, 2048)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -72,16 +76,17 @@ func (c *OpenAgent) getOrGenerateRsaKeyGen() {
 		log.Fatalln(err)
 	}
 
-	c.rsaKeyPair = &RsaKeyPair{
+	keyPair =  &RsaKeyPair{
 		Cert:    pem.EncodeToMemory(certKey),
 		Public:  pem.EncodeToMemory(pubKey),
 		RsaPublic: signer.PublicKey().Marshal(),
 		Private: pem.EncodeToMemory(privateKey),
 	}
-	saveKeyFile(c.rsaKeyPair)
+	saveKeyFile(keyPair)
+	return keyPair
 }
 
-func consoleMessage(keyPair *RsaKeyPair) {
+func ConsoleMessage(keyPair *RsaKeyPair) {
 	encodedPub := base64.StdEncoding.EncodeToString(keyPair.RsaPublic)
 	log.Println(fmt.Sprintf("to add key on server use the command: opencli -command=new_agent -agent=agentName -key=%s", encodedPub))
 }

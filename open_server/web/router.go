@@ -1,4 +1,4 @@
-package webRouter
+package web
 
 import "net"
 

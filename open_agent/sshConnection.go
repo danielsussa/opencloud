@@ -5,6 +5,8 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/danielsussa/opencloud/open_agent/command"
+	sshUtils "github.com/danielsussa/opencloud/open_agent/ssh"
+	"github.com/danielsussa/opencloud/shared"
 	"golang.org/x/crypto/ssh"
 	"io"
 	"log"
@@ -13,14 +15,15 @@ import (
 )
 
 func (openAgent *OpenAgent) setConnectionPort() {
-	cli, err := sshClient(openAgent)
+	keyPair := sshUtils.GetOrGenerateRsaKeyGen()
+	cli, err := sshUtils.SshClient(openAgent.Config.SshServerHost, openAgent.Config.User, keyPair.Private)
 	if err != nil {
 		if strings.Contains(err.Error(), "handshake failed"){
-			consoleMessage(openAgent.rsaKeyPair)
+			sshUtils.ConsoleMessage(keyPair)
 		}
 		log.Fatal(err)
 	}
-	session, stdout, err := sshSession(cli, "connect_agent")
+	session, stdout, err := sshUtils.SshSession(cli, shared.CONNECT_AGENT)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -33,7 +36,7 @@ func (openAgent *OpenAgent) setConnectionPort() {
 	io.Copy(&outBuf, stdout)
 
 	res := strings.Split(outBuf.String(), " ")
-	if res[0] != "connect_agent" {
+	if res[0] != shared.CONNECT_AGENT {
 		log.Fatal("cannot connect agent")
 	}
 	i, _ := strconv.Atoi(res[1])
@@ -41,7 +44,8 @@ func (openAgent *OpenAgent) setConnectionPort() {
 }
 
 func (openAgent *OpenAgent) startAdminProxy() {
-	cli, err := sshClient(openAgent)
+	keyPair := sshUtils.GetOrGenerateRsaKeyGen()
+	cli, err := sshUtils.SshClient(openAgent.Config.SshServerHost, openAgent.Config.User, keyPair.Private)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -59,47 +63,12 @@ func (openAgent *OpenAgent) startAdminProxy() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		cmd := strings.TrimSpace(data)
-		err = command.CommandHandler(cmd).Execute(remoteConn)
+		cmd := command.CommandHandler(strings.TrimSpace(data))
+		msg, err := cmd.Execute()
 		if err != nil {
-			log.Fatal(err)
+			remoteConn.Write([]byte(fmt.Sprintf("%s 500 %s\n",cmd.Kind(), err.Error())))
+			continue
 		}
+		remoteConn.Write([]byte(fmt.Sprintf("%s 200 %s\n",cmd.Kind(), msg)))
 	}
-}
-
-func sshClient(openAgent *OpenAgent) (*ssh.Client, error) {
-	key, err := ssh.ParsePrivateKey(openAgent.rsaKeyPair.Private)
-	if err != nil {
-		return nil, err
-	}
-
-	sshConfig := &ssh.ClientConfig{
-		// SSH connection username
-		User:            openAgent.Config.User,
-		Auth:            []ssh.AuthMethod{ssh.PublicKeys(key)},
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-	}
-	// Connect to SSH remote server using serverEndpoint
-	serverConn, err := ssh.Dial("tcp", openAgent.Config.SshServerHost, sshConfig)
-	if err != nil {
-		return nil, err
-	}
-	return serverConn, err
-}
-
-func sshSession(conn *ssh.Client, command string) (*ssh.Session, io.Reader, error) {
-	session, err := conn.NewSession()
-	if err != nil {
-		log.Fatalln(fmt.Printf("Dial INTO remote server error: %s", err))
-	}
-
-	stdout, err := session.StdoutPipe()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if err := session.Start(command); err != nil {
-		log.Fatal(err)
-	}
-	return session, stdout, err
 }

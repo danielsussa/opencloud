@@ -2,12 +2,12 @@ package tcpListener
 
 import (
 	"crypto/tls"
-	tlsListener "github.com/danielsussa/opencloud/open_server/tls"
+	"github.com/danielsussa/opencloud/open_server/web"
 	"log"
 	"net"
 )
 
-func New(key tlsListener.RsaKeyPair, port string, k func(conn net.Conn)) {
+func New(key web.RsaKeyPair, port string, k func(conn net.Conn)) {
 	cer, err := tls.X509KeyPair(key.Key, key.Public)
 	if err != nil {
 		log.Fatal(err)

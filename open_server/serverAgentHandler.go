@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/base64"
 	"fmt"
+	"github.com/danielsussa/opencloud/open_server/info"
 	"github.com/gliderlabs/ssh"
 	"io"
 	"log"
@@ -14,13 +15,12 @@ func (apiServer *ApiServer) serverAgentHandler(config Config, errChan chan error
 		Addr: config.ServerAgentPort,
 		Handler: ssh.Handler(func(s ssh.Session) {
 			// get command
-			apiServer.CommandList = append(apiServer.CommandList, s.Command())
 			command, err := getAgentCommand(s.Command())
 			if err != nil {
 				log.Println(err)
 				return
 			}
-			err = command.Execute(apiServer, s)
+			_, err = command.Execute(apiServer, s)
 			if err != nil {
 				io.WriteString(s, fmt.Sprintf("%s\n", err.Error()))
 				log.Println(err)
@@ -47,10 +47,7 @@ func (apiServer *ApiServer) serverAgentHandler(config Config, errChan chan error
 		}),
 		PublicKeyHandler: ssh.PublicKeyHandler(func(ctx ssh.Context, key ssh.PublicKey) bool {
 			keyEncoded := base64.StdEncoding.EncodeToString(key.Marshal())
-			if _, ok := apiServer.agentSession[keyEncoded]; !ok {
-				return false
-			}
-			return true
+			return info.HasKey(keyEncoded)
 		}),
 		RequestHandlers: map[string]ssh.RequestHandler{
 			"tcpip-forward":        forwardHandler.HandleSSHRequest,

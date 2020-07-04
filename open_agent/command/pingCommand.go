@@ -1,19 +1,19 @@
 package command
 
 import (
+	"github.com/danielsussa/opencloud/shared"
 	"log"
-	"net"
 )
 
 type pingCommand struct {
 
 }
 
-func (p pingCommand)Execute(conn net.Conn)error{
+func (p pingCommand) Kind() string {
+	return shared.PING
+}
+
+func (p pingCommand)Execute()(string,error){
 	log.Println("sucessfull receive ping message from server")
-	_, err := conn.Write([]byte("pong\n"))
-	if err != nil {
-		return err
-	}
-	return nil
+	return "pong", nil
 }

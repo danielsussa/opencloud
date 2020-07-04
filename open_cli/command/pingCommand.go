@@ -3,6 +3,7 @@ package command
 import (
 	"fmt"
 	"github.com/danielsussa/opencloud/shared"
+	"strings"
 )
 
 type pingCommand struct {
@@ -15,5 +16,8 @@ func (ping pingCommand) Request() string {
 }
 
 func (ping pingCommand) Response(strArr []string) string {
+	if strArr[1] != "200"{
+		return fmt.Sprintf("error ping: %s", strings.Join(strArr[2:]," "))
+	}
 	return fmt.Sprintf("sucessfull ping to host")
 }

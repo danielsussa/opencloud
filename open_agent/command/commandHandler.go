@@ -2,12 +2,12 @@ package command
 
 import (
 	"github.com/danielsussa/opencloud/shared"
-	"net"
 	"strings"
 )
 
 type ApiCommand interface {
-	Execute(conn net.Conn)error
+	Execute()(string,error)
+	Kind()string
 }
 
 func CommandHandler(cmd string) ApiCommand {

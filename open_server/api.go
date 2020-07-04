@@ -1,10 +1,7 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"github.com/gliderlabs/ssh"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/signal"
@@ -14,25 +11,13 @@ type Config struct {
 	ServerClientPort     string
 	ServerClientPassword string
 	ServerAgentPort      string
-
-	SavedCommandList [][]string
 }
 
 type ApiServer struct {
-	Config      Config
-	CommandList [][]string
-
-	agentSession map[string]AgentInfo // public rsa key encoded base64
-}
-
-type AgentInfo struct {
-	Agent    string
-	Session   ssh.Session
-	Port int
+	Config Config
 }
 
 func (apiServer *ApiServer) Start(config Config) {
-	apiServer.agentSession = make(map[string]AgentInfo)
 	errChan := make(chan error, 2)
 	apiServer.Config = config
 	apiServer.serverAgentHandler(config, errChan)
@@ -54,13 +39,14 @@ func (apiServer *ApiServer) gracefullTerminate() {
 		select {
 		case sig := <-c:
 			fmt.Printf("Got %s signal. Aborting...\n", sig)
-			if apiServer.CommandList == nil {
-				os.Exit(1)
-			}
-			b, err := json.Marshal(apiServer.CommandList)
-			fmt.Println(err)
-			ioutil.WriteFile("data/commands.json", b, 0644)
 			os.Exit(1)
+			//if apiServer.CommandList == nil {
+			//	os.Exit(1)
+			//}
+			//b, err := json.Marshal(apiServer.CommandList)
+			//fmt.Println(err)
+			//ioutil.WriteFile("data/commands.json", b, 0644)
+			//os.Exit(1)
 		}
 	}()
 }
