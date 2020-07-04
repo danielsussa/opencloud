@@ -28,7 +28,6 @@ func (c *OpenAgent) getOrGenerateRsaKeyGen() {
 	keyPair := loadKeyFile()
 	if keyPair != nil {
 		c.rsaKeyPair = keyPair
-		consoleMessage(keyPair)
 		return
 	}
 
@@ -80,7 +79,6 @@ func (c *OpenAgent) getOrGenerateRsaKeyGen() {
 		Private: pem.EncodeToMemory(privateKey),
 	}
 	saveKeyFile(c.rsaKeyPair)
-	consoleMessage(c.rsaKeyPair)
 }
 
 func consoleMessage(keyPair *RsaKeyPair) {

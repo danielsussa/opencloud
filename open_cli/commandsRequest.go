@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/danielsussa/opencloud/shared"
 	"log"
 )
 
@@ -14,9 +15,9 @@ type flags struct {
 
 func (f flags) returnCommandRequest() string {
 	switch *f.Command {
-	case "new_agent":
+	case shared.NEW_AGENT:
 		return newAgentCommandRequest{Key: *f.Key, Agent: *f.Agent}.Text()
-	case "ping":
+	case shared.PING:
 		return pingCommandRequest{Agent: *f.Agent}.Text()
 
 	}

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/danielsussa/opencloud/shared"
 	"strings"
 )
 
@@ -24,9 +25,9 @@ func (ping newAgentCommandResponse) Text() string {
 func returnCommandResponse(str string) string {
 	strArr := strings.Split(str, " ")
 	switch strArr[0] {
-	case "ping":
+	case shared.PING:
 		return pingCommandResponse{str: strArr}.Text()
-	case "new_agent":
+	case shared.NEW_AGENT:
 		return newAgentCommandResponse{str: strArr}.Text()
 	}
 	return fmt.Sprintf("error on command: %s", str)

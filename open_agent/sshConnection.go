@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"github.com/danielsussa/opencloud/open_agent/command"
 	"golang.org/x/crypto/ssh"
 	"io"
 	"log"
@@ -14,6 +15,9 @@ import (
 func (openAgent *OpenAgent) setConnectionPort() {
 	cli, err := sshClient(openAgent)
 	if err != nil {
+		if strings.Contains(err.Error(), "handshake failed"){
+			consoleMessage(openAgent.rsaKeyPair)
+		}
 		log.Fatal(err)
 	}
 	session, stdout, err := sshSession(cli, "connect_agent")
@@ -56,7 +60,7 @@ func (openAgent *OpenAgent) startAdminProxy() {
 			log.Fatal(err)
 		}
 		cmd := strings.TrimSpace(data)
-		err = openAgent.commandHandler(cmd).Execute(remoteConn)
+		err = command.CommandHandler(cmd).Execute(remoteConn)
 		if err != nil {
 			log.Fatal(err)
 		}
