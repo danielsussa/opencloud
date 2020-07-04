@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	apiCommand "github.com/danielsussa/opencloud/open_cli/command"
 	"golang.org/x/crypto/ssh"
 	"io"
 	"io/ioutil"
@@ -17,7 +18,7 @@ var password = "custom_password"
 
 func main() {
 	conf := loadConfig()
-	command := loadAllFlags().returnCommandRequest()
+	command := apiCommand.ReturnCommand()
 
 	// Create client config
 	config := &ssh.ClientConfig{
@@ -49,7 +50,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if err := session.Start(command); err != nil {
+	if err := session.Start(command.Request()); err != nil {
 		log.Fatal(err)
 	}
 
@@ -66,7 +67,7 @@ func main() {
 	if err := session.Wait(); err != nil {
 		log.Println(err)
 	}
-	fmt.Println(returnCommandResponse(outBuf.String()))
+	fmt.Println(command.Response(strings.Split(outBuf.String(), " ")))
 }
 
 type fileConfig struct {
