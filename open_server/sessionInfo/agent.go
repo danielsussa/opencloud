@@ -1,7 +1,11 @@
 package sessionInfo
 
-import "github.com/gliderlabs/ssh"
+import (
+	"github.com/danielsussa/opencloud/open_server/data"
+	"github.com/gliderlabs/ssh"
+)
 
+// user -> agentSessionInfo
 var sessionInfo map[string]*agentSessionInfo
 
 func init() {
@@ -13,7 +17,7 @@ type agentSessionInfo struct {
 	PublicKey string
 	Port      int
 
-	reverseProxtMap map[int]reverseProxyInfo // (localPort) -> remotePort
+	reverseProxyMap map[int]reverseProxyInfo // (localPort) -> remotePort
 }
 
 type reverseProxyInfo struct {
@@ -21,18 +25,44 @@ type reverseProxyInfo struct {
 	name       string
 }
 
+func LoadAgentData() {
+	currentData := data.GetData()
+	for name, agent := range currentData.Agents {
+		sessionInfo[name] = &agentSessionInfo{
+			PublicKey: agent.PublicKey,
+		}
+
+		rpMap := make(map[int]reverseProxyInfo)
+		for rpName, rp := range agent.ReverseProxy {
+			rpMap[rp.Port] = reverseProxyInfo{
+				remotePort: 0,
+				name:       rpName,
+			}
+		}
+		sessionInfo[name].reverseProxyMap = rpMap
+	}
+}
+
 func (s *agentSessionInfo) HasReverseProxy(localPort int) bool {
-	if _, ok := s.reverseProxtMap[localPort]; ok {
+	if _, ok := s.reverseProxyMap[localPort]; ok {
 		return true
 	}
 	return false
 }
 
-func (s *agentSessionInfo) AddReverseProxy(name string, localPort, remotePort int) {
-	if s.reverseProxtMap == nil {
-		s.reverseProxtMap = make(map[int]reverseProxyInfo)
+func (s *agentSessionInfo) DeleteReverseProxy(name string) {
+	for k, val := range s.reverseProxyMap {
+		if val.name == name {
+			delete(s.reverseProxyMap, k)
+		}
 	}
-	s.reverseProxtMap[localPort] = reverseProxyInfo{
+}
+
+func (s *agentSessionInfo) AddReverseProxy(name string, localPort, remotePort int) {
+	if s.reverseProxyMap == nil {
+		s.reverseProxyMap = make(map[int]reverseProxyInfo)
+	}
+	s.reverseProxyMap[localPort] = reverseProxyInfo{
 		remotePort: remotePort,
 		name:       name,
 	}

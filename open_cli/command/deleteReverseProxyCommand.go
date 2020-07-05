@@ -19,5 +19,5 @@ func (rp deleteReverseProxy) Response(strArr []string) string {
 	if strArr[1] != "200"{
 		return fmt.Sprintf("error deleting proxy: %s", strings.Join(strArr[2:]," "))
 	}
-	return fmt.Sprintf("sucessfull create new proxy")
+	return fmt.Sprintf("sucessfull delete proxy")
 }

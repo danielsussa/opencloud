@@ -34,7 +34,7 @@ func (cmd addReverseProxyCommand) Execute() (string, error) {
 		return "", errors.New("reverse proxy already exist")
 	}
 
-	reqMsg := fmt.Sprintf("%s %s %d %d", shared.ADD_REVERSE_PROXY, agent, localPort, remotePort)
+	reqMsg := fmt.Sprintf("%s %s %s %d %d", shared.ADD_REVERSE_PROXY, agent, proxyName, localPort, remotePort)
 	msg, err := sendTcpMessage(info.Port, reqMsg)
 	if err != nil {
 		return "", err

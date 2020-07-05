@@ -23,6 +23,8 @@ func GetClientCommand(strArr []string) (command command, err error) {
 		return pingCommand{Agent: strArr[1]}, nil
 	case shared.ADD_REVERSE_PROXY:
 		return addReverseProxyCommand{strArr: strArr}, nil
+	case shared.DELETE_REVERSE_PROXY:
+		return deleteReverseProxyCommand{strArr: strArr}, nil
 	}
 	return nil, errors.New("cannot find command")
 }
