@@ -3,7 +3,7 @@ package clientCommand
 import (
 	"errors"
 	"fmt"
-	"github.com/danielsussa/opencloud/open_server/sessionInfo"
+	"github.com/danielsussa/opencloud/open_server/data"
 	"github.com/danielsussa/opencloud/shared"
 	"strings"
 )
@@ -15,14 +15,14 @@ type deleteReverseProxyCommand struct {
 // delete_reverse_proxy agentName commandName
 func (cmd deleteReverseProxyCommand) Execute() (string, error) {
 	agent := cmd.strArr[1]
-	info := sessionInfo.GetAgentInfo(agent)
-	if info == nil {
+	agentData := data.GetAgentData(agent)
+	if agentData == nil {
 		return "", errors.New("no agent subscribed to server")
 	}
 	proxyName := cmd.strArr[2]
 
 	reqMsg := fmt.Sprintf("%s %s %s", shared.DELETE_REVERSE_PROXY, agent, proxyName)
-	msg, err := sendTcpMessage(info.Port, reqMsg)
+	msg, err := sendTcpMessage(agentData.Port, reqMsg)
 	if err != nil {
 		return "", err
 	}
@@ -30,7 +30,7 @@ func (cmd deleteReverseProxyCommand) Execute() (string, error) {
 	if msgSpl[1] != "200" {
 		return "", errors.New("cannot delete2 reverse proxy")
 	}
-	info.DeleteReverseProxy(proxyName)
+	agentData.DeleteReverseProxy(proxyName)
 
 	return "", nil
 }

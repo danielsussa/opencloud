@@ -42,7 +42,7 @@ func NewReverseProxy(remoteHost, localHost, user, proxyName string, key []byte) 
 			if err != nil {
 				return
 			}
-			// Open a (local) connection to localEndpoint whose content will be forwarded so serverEndpoint
+
 			local, err := net.Dial("tcp", localHost)
 			if err != nil {
 				log.Println(err)

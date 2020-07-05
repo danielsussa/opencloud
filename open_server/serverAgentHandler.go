@@ -4,7 +4,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"github.com/danielsussa/opencloud/open_server/agentCommand"
-	sessionInfo2 "github.com/danielsussa/opencloud/open_server/sessionInfo"
+	"github.com/danielsussa/opencloud/open_server/data"
 	"github.com/gliderlabs/ssh"
 	"io"
 	"log"
@@ -48,7 +48,7 @@ func (apiServer *ApiServer) serverAgentHandler(config Config, errChan chan error
 		}),
 		PublicKeyHandler: ssh.PublicKeyHandler(func(ctx ssh.Context, key ssh.PublicKey) bool {
 			keyEncoded := base64.StdEncoding.EncodeToString(key.Marshal())
-			return sessionInfo2.HasKey(keyEncoded)
+			return data.AnyUserHasKey(keyEncoded)
 		}),
 		RequestHandlers: map[string]ssh.RequestHandler{
 			"tcpip-forward":        forwardHandler.HandleSSHRequest,

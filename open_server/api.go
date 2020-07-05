@@ -2,8 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/danielsussa/opencloud/open_server/data"
-	"github.com/danielsussa/opencloud/open_server/sessionInfo"
 	"log"
 	"os"
 	"os/signal"
@@ -56,10 +54,6 @@ func (apiServer *ApiServer) gracefullTerminate() {
 var password = "custom_password"
 
 func main() {
-	// load data
-	data.InitData(".data/data.json")
-	sessionInfo.LoadAgentData()
-
 	config := Config{
 		ServerClientPassword: password,
 		ServerClientPort:     ":9999",

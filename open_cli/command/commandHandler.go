@@ -31,6 +31,8 @@ func ReturnCommand() ApiCommand {
 		return addReverseProxy{flags: flags}
 	case shared.DELETE_REVERSE_PROXY:
 		return deleteReverseProxy{flags: flags}
+	case shared.SAVE_AGENT_PROFILE:
+		return saveAgentProfileCommand{flags: flags}
 
 	}
 	log.Fatal("cannot find command")

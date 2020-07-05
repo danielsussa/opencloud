@@ -25,6 +25,8 @@ func GetClientCommand(strArr []string) (command command, err error) {
 		return addReverseProxyCommand{strArr: strArr}, nil
 	case shared.DELETE_REVERSE_PROXY:
 		return deleteReverseProxyCommand{strArr: strArr}, nil
+	case shared.SAVE_AGENT_PROFILE:
+		return saveAgentProfileCommand{strArr: strArr}, nil
 	}
 	return nil, errors.New("cannot find command")
 }

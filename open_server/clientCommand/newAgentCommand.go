@@ -1,7 +1,7 @@
 package clientCommand
 
 import (
-	"github.com/danielsussa/opencloud/open_server/sessionInfo"
+	"github.com/danielsussa/opencloud/open_server/data"
 	"github.com/danielsussa/opencloud/shared"
 )
 
@@ -15,6 +15,6 @@ func (n newAgentCommand) Kind() string {
 }
 
 func (n newAgentCommand) Execute() (string, error) {
-	sessionInfo.AddAgentInfoKey(n.Agent, n.Key)
+	data.GetData().NewAgent(n.Agent, n.Key)
 	return "ok", nil
 }
