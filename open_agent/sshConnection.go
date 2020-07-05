@@ -10,7 +10,6 @@ import (
 	"golang.org/x/crypto/ssh"
 	"io"
 	"log"
-	"strconv"
 	"strings"
 )
 
@@ -32,15 +31,22 @@ func (openAgent *OpenAgent) setConnectionPort() {
 		log.Fatal(err)
 	}
 
+
 	var outBuf bytes.Buffer
 	io.Copy(&outBuf, stdout)
 
-	res := strings.Split(outBuf.String(), " ")
-	if res[0] != shared.CONNECT_AGENT {
-		log.Fatal("cannot connect agent")
+	commandLines := strings.Split(outBuf.String(), "\n")
+
+	for _, commandLine := range commandLines{
+		if commandLine == ""{
+			continue
+		}
+		cmd := command.CommandHandler(strings.TrimSpace(commandLine))
+		_, err := cmd.Execute()
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
-	i, _ := strconv.Atoi(res[1])
-	openAgent.Port = i
 }
 
 func (openAgent *OpenAgent) startAdminProxy() {
@@ -49,7 +55,7 @@ func (openAgent *OpenAgent) startAdminProxy() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	listener, err := cli.Listen("tcp", fmt.Sprintf("%s:%d", "localhost", openAgent.Port))
+	listener, err := cli.Listen("tcp", fmt.Sprintf("%s:%d", "localhost", sshUtils.GetSshPort()))
 	if err != nil {
 		log.Fatalln(fmt.Printf("Listen open port ON remote server error: %s", err))
 	}

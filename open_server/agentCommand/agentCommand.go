@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"github.com/danielsussa/opencloud/open_server/data"
 	"github.com/danielsussa/opencloud/open_server/sessionInfo"
 	"github.com/danielsussa/opencloud/shared"
 	"github.com/gliderlabs/ssh"
@@ -32,7 +33,21 @@ func (n connectAgentCommand) Execute(s ssh.Session) (string, error) {
 	}
 
 	sessionInfo.AddAgentInfo(s.User(), keyEncoded, port, s)
-	_, err = io.WriteString(s, fmt.Sprintf("connect_agent %d", port))
+
+	commands := fmt.Sprintf("%s %d\n", shared.CONNECT_AGENT, port)
+	agentData := data.GetAgentData(s.User())
+	if agentData != nil {
+		for rpName, rp := range agentData.ReverseProxy {
+			rpFreePort, err := freeport.GetFreePort()
+			if err != nil {
+				return "", err
+			}
+			// add_reverse_proxy myagent-1 proxyName 1323 52738
+			commands += fmt.Sprintf("%s %s %s %d %d\n", shared.ADD_REVERSE_PROXY, s.User(), rpName, rp.Port, rpFreePort)
+		}
+	}
+
+	_, err = io.WriteString(s, commands)
 	if err != nil {
 		return "", err
 	}

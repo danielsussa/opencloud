@@ -5,6 +5,7 @@ import (
 	"github.com/danielsussa/opencloud/open_agent/reverseProxy"
 	sshUtils "github.com/danielsussa/opencloud/open_agent/ssh"
 	"github.com/danielsussa/opencloud/shared"
+	"log"
 	"strconv"
 )
 
@@ -38,5 +39,6 @@ func (p addReverseProxyCommand) Execute() (string, error) {
 	if err != nil {
 		return "",err
 	}
+	log.Println(fmt.Sprintf("Sucessfull setting reverse proxy local:%d remote:%d", localPort, remotePort))
 	return "",nil
 }

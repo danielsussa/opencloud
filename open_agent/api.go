@@ -9,8 +9,6 @@ type Config struct {
 
 type OpenAgent struct {
 	Config Config
-
-	Port int
 }
 
 func (c OpenAgent) Start() {

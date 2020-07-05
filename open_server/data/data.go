@@ -8,7 +8,7 @@ import (
 
 type (
 	data struct {
-		Agents map[string]dataAgent
+		Agents map[string]*dataAgent
 	}
 	dataAgent struct {
 		PublicKey    string
@@ -23,6 +23,13 @@ var currentData *data
 
 func GetData() *data {
 	return currentData
+}
+
+func GetAgentData(agent string) *dataAgent {
+	if _, ok := currentData.Agents[agent]; !ok {
+		return nil
+	}
+	return currentData.Agents[agent]
 }
 
 func InitData(path string) {

@@ -8,6 +8,18 @@ import (
 )
 
 var sshClient *ssh.Client
+var port int
+
+func SetupSshPort(p int){
+	if port != 0 {
+		return
+	}
+	port = p
+}
+
+func GetSshPort()int{
+	return port
+}
 
 func SshClient(host string,user string, pkey []byte) (*ssh.Client, error) {
 	if sshClient != nil {

@@ -17,6 +17,8 @@ func CommandHandler(cmd string) ApiCommand {
 		return pingCommand{}
 	case shared.ADD_REVERSE_PROXY:
 		return addReverseProxyCommand{cmd: cmdArr}
+	case shared.CONNECT_AGENT:
+		return connectAgentCommand{cmd: cmdArr}
 	case shared.DELETE_REVERSE_PROXY:
 		return deleteReverseProxyCommand{cmd: cmdArr}
 	}
