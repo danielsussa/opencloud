@@ -15,6 +15,7 @@ type ApiCommand interface {
 type flags struct {
 	Port    *string
 	Agent   *string
+	Name    *string
 	Key     *string
 	Command *string
 }
@@ -28,6 +29,8 @@ func ReturnCommand() ApiCommand {
 		return pingCommand{flags: flags}
 	case shared.ADD_REVERSE_PROXY:
 		return addReverseProxy{flags: flags}
+	case shared.DELETE_REVERSE_PROXY:
+		return deleteReverseProxy{flags: flags}
 
 	}
 	log.Fatal("cannot find command")
@@ -39,11 +42,13 @@ func loadFlags() flags {
 	key := flag.String("key", "", "")
 	port := flag.String("port", "", "")
 	command := flag.String("command", "", "")
+	name := flag.String("name", "", "")
 	flag.Parse()
 	return flags{
 		Agent:   agent,
 		Port:    port,
 		Key:     key,
 		Command: command,
+		Name: name,
 	}
 }

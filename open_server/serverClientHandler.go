@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/danielsussa/opencloud/open_server/clientCommand"
 	"github.com/danielsussa/opencloud/shared"
 	"github.com/gliderlabs/ssh"
 	"io"
@@ -19,7 +20,7 @@ func (apiServer *ApiServer) serverClientHandler(config Config, errChan chan erro
 		},
 		Handler: ssh.Handler(func(s ssh.Session) {
 			// get command
-			command, err := getClientCommand(s.Command())
+			command, err := clientCommand.GetClientCommand(s.Command())
 			if err != nil {
 				io.WriteString(s, fmt.Sprintf("%s 400 %s\n", shared.NIL, err.Error()))
 				log.Println(err)
@@ -27,7 +28,7 @@ func (apiServer *ApiServer) serverClientHandler(config Config, errChan chan erro
 			}
 
 			// execute command
-			res, err := command.Execute(apiServer, s)
+			res, err := command.Execute()
 			if err != nil {
 				io.WriteString(s, fmt.Sprintf("%s 500 %s\n", command.Kind(), err.Error()))
 				log.Println(err)

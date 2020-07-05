@@ -10,9 +10,9 @@ type addReverseProxy struct {
 	flags flags
 }
 
-// add_reverse_proxy agentName 8080
+// add_reverse_proxy agentName proxyName 8080
 func (rp addReverseProxy) Request() string {
-	return fmt.Sprintf("%s %s %s", shared.ADD_REVERSE_PROXY, *rp.flags.Agent, *rp.flags.Port)
+	return fmt.Sprintf("%s %s %s %s", shared.ADD_REVERSE_PROXY, *rp.flags.Agent,*rp.flags.Name, *rp.flags.Port)
 }
 
 func (rp addReverseProxy) Response(strArr []string) string {
