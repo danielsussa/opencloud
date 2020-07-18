@@ -1,16 +1,18 @@
-package main
+package api
 
 import (
 	"encoding/base64"
 	"fmt"
+	errorhandler "github.com/danielsussa/opencloud/open_server/error"
+	"io"
+	"log"
+
 	"github.com/danielsussa/opencloud/open_server/agentCommand"
 	"github.com/danielsussa/opencloud/open_server/data"
 	"github.com/gliderlabs/ssh"
-	"io"
-	"log"
 )
 
-func (apiServer *ApiServer) serverAgentHandler(config Config, errChan chan error) {
+func (apiServer *ApiServer) serverAgentHandler(config Config) {
 	forwardHandler := &ssh.ForwardedTCPHandler{}
 	server := ssh.Server{
 		Addr: config.ServerAgentPort,
@@ -56,6 +58,6 @@ func (apiServer *ApiServer) serverAgentHandler(config Config, errChan chan error
 		},
 	}
 	go func() {
-		errChan <- server.ListenAndServe()
+		errorhandler.GetErrChan() <- server.ListenAndServe()
 	}()
 }

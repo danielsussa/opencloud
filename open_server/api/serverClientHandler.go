@@ -1,15 +1,17 @@
-package main
+package api
 
 import (
 	"fmt"
-	"github.com/danielsussa/opencloud/open_server/clientCommand"
-	"github.com/danielsussa/opencloud/shared"
-	"github.com/gliderlabs/ssh"
 	"io"
 	"log"
+
+	"github.com/danielsussa/opencloud/open_server/clientCommand"
+	errorhandler "github.com/danielsussa/opencloud/open_server/error"
+	"github.com/danielsussa/opencloud/shared"
+	"github.com/gliderlabs/ssh"
 )
 
-func (apiServer *ApiServer) serverClientHandler(config Config, errChan chan error) {
+func (apiServer *ApiServer) serverClientHandler(config Config) {
 	server := ssh.Server{
 		Addr: config.ServerClientPort,
 		PasswordHandler: func(ctx ssh.Context, password string) bool {
@@ -48,6 +50,6 @@ func (apiServer *ApiServer) serverClientHandler(config Config, errChan chan erro
 	}
 
 	go func() {
-		errChan <- server.ListenAndServe()
+		errorhandler.GetErrChan() <- server.ListenAndServe()
 	}()
 }
