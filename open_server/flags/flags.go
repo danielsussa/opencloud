@@ -10,6 +10,7 @@ type flags struct {
 	AgentPort  *string
 	TlsPublic  *string
 	TlsPrivate *string
+	TlsPort    *string
 }
 
 var currFlags flags
@@ -22,8 +23,20 @@ func GetTlsPrivate() string {
 	return *currFlags.TlsPrivate
 }
 
+func GetTlsPort() string {
+	return *currFlags.TlsPort
+}
+
 func GetTlsPublic() string {
 	return *currFlags.TlsPublic
+}
+
+func GetClientPort() string {
+	return *currFlags.ClientPort
+}
+
+func GetQgentPort() string {
+	return *currFlags.AgentPort
 }
 
 func init() {
@@ -33,6 +46,7 @@ func init() {
 
 	tlsPrivate := flag.String("tlsPrivate", "", "")
 	tlsPublic := flag.String("tlsPublic", "", "")
+	tlsPort := flag.String("tlsPort", ":443", "")
 
 	flag.Parse()
 	currFlags = flags{
@@ -41,5 +55,6 @@ func init() {
 		AgentPort:  agentPort,
 		TlsPrivate: tlsPrivate,
 		TlsPublic:  tlsPublic,
+		TlsPort:    tlsPort,
 	}
 }

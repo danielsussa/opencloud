@@ -92,7 +92,11 @@ func GetAgentData(agent string) *dataAgent {
 	return currentData.Agents[agent]
 }
 
-func init() {
+func InitFromConfig(d *data) {
+	currentData = d
+}
+
+func InitFromFile() {
 	if currentData != nil {
 		return
 	}
