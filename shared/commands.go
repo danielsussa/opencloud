@@ -7,5 +7,10 @@ const (
 	NEW_AGENT = "new_agent"
 	SAVE_AGENT_PROFILE = "save_agent_profile"
 	CONNECT_AGENT = "connect_agent"
+	LOAD_PRESETS = "load_presets"
 	NIL = "nil"
+)
+
+const (
+	PING_REQUEST = "ping"
 )

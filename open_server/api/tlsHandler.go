@@ -29,18 +29,20 @@ func (apiServer *ApiServer) tlsHandler() {
 		log.Fatal(err)
 	}
 
-	listener, err := tls.Listen("tcp", ":443", conf)
+	listener, err := tls.Listen("tcp", flags.GetTlsPort(), conf)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer listener.Close()
-	for {
-		conn, err := listener.Accept()
-		if err != nil {
-			log.Fatal(err)
+
+	go func(){
+		for {
+			conn, err := listener.Accept()
+			if err != nil {
+				log.Fatal(err)
+			}
+			go handler(conn)
 		}
-		go handler(conn)
-	}
+	}()
 }
 
 func handler(conn net.Conn) {
