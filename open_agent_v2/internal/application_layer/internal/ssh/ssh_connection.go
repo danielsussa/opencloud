@@ -1,8 +1,12 @@
 package sshConnection
 
-import "golang.org/x/crypto/ssh"
+import (
+	"golang.org/x/crypto/ssh"
+	"net"
+)
 
-var sshConn *ssh.Client
+var sshConn ssh.Conn
+var chanReq <-chan *ssh.Request
 
 func ConectToServer()error{
 	var err error
@@ -15,13 +19,22 @@ func ConectToServer()error{
 		//},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 	}
-	sshConn, err = ssh.Dial("tcp", "localhost:2222", sshConfig)
+	tcpConn, err := net.Dial("tcp", "localhost:2222")
+	if err != nil {
+		return err
+	}
+
+	sshConn, _ ,chanReq, err = ssh.NewClientConn(tcpConn, "localhost:2222", sshConfig)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func GetSshConnection()*ssh.Client {
+func GetSshConnection()ssh.Conn {
 	return sshConn
+}
+
+func GetSshRequests()<-chan *ssh.Request {
+	return chanReq
 }

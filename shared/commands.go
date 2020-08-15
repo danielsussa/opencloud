@@ -8,6 +8,7 @@ const (
 	SAVE_AGENT_PROFILE = "save_agent_profile"
 	CONNECT_AGENT = "connect_agent"
 	LOAD_PRESETS = "load_presets"
+	LOAD_PRESETS_RESULT = "load_presets_result"
 	NIL = "nil"
 )
 
